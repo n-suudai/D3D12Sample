@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Source\App.hpp" />
+    <ClInclude Include="Source\PCH.hpp" />
+    <ClInclude Include="Source\KeyCode.hpp" />
+    <ClInclude Include="Source\AppWin.hpp" />
+    <ClInclude Include="Source\Sample\SampleApp.hpp" />
+    <ClInclude Include="Source\Sample\ResultUtil.hpp" />
+    <ClInclude Include="Source\Sample\Vertex.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\PCH.cpp" />
+    <ClCompile Include="Source\WinMain.cpp" />
+    <ClCompile Include="Source\AppWin.cpp" />
+    <ClCompile Include="Source\AppMain.cpp" />
+    <ClCompile Include="Source\Sample\SampleApp.cpp" />
+    <ClCompile Include="Source\Sample\ResultUtil.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Basic_VS.hlsl" />
+    <FxCompile Include="Shaders\Basic_PS.hlsl" />
+  </ItemGroup>
+</Project>
