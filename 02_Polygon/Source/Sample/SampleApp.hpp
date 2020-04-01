@@ -64,6 +64,7 @@ private:
     ComPtr<ID3D12Fence1> m_Fence;
 
     ComPtr<ID3D12Resource1> m_VertexBuffer;
+    ComPtr<ID3D12Resource1> m_IndexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
     D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 

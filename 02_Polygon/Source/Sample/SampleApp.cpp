@@ -326,12 +326,18 @@ bool SampleApp::Init()
         }
     }
 
-    // 頂点バッファー
+    // 頂点バッファ & インデックスバッファ
     {
         Vertex_Position vertices[] = {
-            { { -1.0f, -1.0f,  0.0f }, },
-            { { -1.0f,  1.0f,  0.0f }, },
-            { {  1.0f, -1.0f,  0.0f }, },
+            { { -0.4f, -0.7f,  0.0f }, },
+            { { -0.4f,  0.7f,  0.0f }, },
+            { {  0.4f, -0.7f,  0.0f }, },
+            { {  0.4f,  0.7f,  0.0f }, },
+        };
+
+        USHORT indices[] = {
+            0, 1, 2,
+            2, 1, 3,
         };
 
         D3D12_HEAP_PROPERTIES heapProperties = {};
@@ -342,7 +348,7 @@ bool SampleApp::Init()
         heapProperties.VisibleNodeMask = 0; // 単一アダプターの場合 0 でよい
 
         D3D12_RESOURCE_DESC resourceDesc = {};
-        resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // バッファー
+        resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; // バッファ
         resourceDesc.Alignment = 0;
         resourceDesc.Width = sizeof(vertices); // 幅で全ての頂点分のバッファを表現
         resourceDesc.Height = 1; // 幅で表現しているので 1 とする
@@ -368,11 +374,11 @@ bool SampleApp::Init()
             return false;
         }
 
-        Vertex_Position* buffer = nullptr;
+        Vertex_Position* vertexBuffer = nullptr;
         result = m_VertexBuffer->Map(
             0,         // ミップマップなどではないため 0 でよい
             nullptr,   // 範囲指定。全範囲なので nullptr でよい
-            (void**)&buffer // 受け取るためのポインター変数のアドレス
+            (void**)&vertexBuffer // 受け取るためのポインター変数のアドレス
         );
         if (!result)
         {
@@ -383,7 +389,7 @@ bool SampleApp::Init()
         std::copy(
             std::begin(vertices),
             std::end(vertices),
-            buffer
+            vertexBuffer
         );
 
         m_VertexBuffer->Unmap(0, nullptr);
@@ -393,7 +399,50 @@ bool SampleApp::Init()
         m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
         m_VertexBufferView.SizeInBytes = sizeof(vertices);
         m_VertexBufferView.StrideInBytes = sizeof(vertices[0]);
+
+
+        // インデックスバッファ
+        resourceDesc.Width = sizeof(indices); // 頂点バッファの設定からサイズのみ変更
+        result = m_Device->CreateCommittedResource(
+            &heapProperties,
+            D3D12_HEAP_FLAG_NONE,
+            &resourceDesc,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(&m_IndexBuffer)
+        );
+        if (!result)
+        {
+            ShowErrorMessage(result, "ID3D12Device::CreateCommittedResource");
+            return false;
+        }
+
+        USHORT* indexBuffer = nullptr;
+        result = m_IndexBuffer->Map(
+            0,         // ミップマップなどではないため 0 でよい
+            nullptr,   // 範囲指定。全範囲なので nullptr でよい
+            (void**)&indexBuffer // 受け取るためのポインター変数のアドレス
+        );
+        if (!result)
+        {
+            ShowErrorMessage(result, "ID3D12Resource::Map");
+            return false;
+        }
+
+        std::copy(
+            std::begin(indices),
+            std::end(indices),
+            indexBuffer
+        );
+
+        m_IndexBuffer->Unmap(0, nullptr);
+
+        m_IndexBufferView = D3D12_INDEX_BUFFER_VIEW{};
+        m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
+        m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
+        m_IndexBufferView.SizeInBytes = sizeof(indices);
     }
+
 
     ComPtr<ID3DBlob> vsBlob;
     ComPtr<ID3DBlob> psBlob;
@@ -662,8 +711,11 @@ void SampleApp::Render()
     // 頂点バッファ
     m_GraphicsCommandList->IASetVertexBuffers(0, 1, &m_VertexBufferView);
 
+    // インデックスバッファ
+    m_GraphicsCommandList->IASetIndexBuffer(&m_IndexBufferView);
+
     // 描画命令
-    m_GraphicsCommandList->DrawInstanced(3, 1, 0, 0);
+    m_GraphicsCommandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
     // リソースバリア
     {
